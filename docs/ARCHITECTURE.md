@@ -3,31 +3,32 @@
 ## Implementation Structure
 - **Frontend**: React
 - **Backend**: Spring
-- **Database**: DynamoDB
+- **Database**: H2 (Development), Postgres (Production)
 
 ## Core Functions
-- Create a Streak
-- Add description
-- Start tracking
-- Webhooks (API layer)
+- Create, Update, Manage Streaks
+- Track daily progress
+- Visualize history (Month, Week, Last 5 Days)
+- Metrics calculation
 
 ## REST APIs
 ### Endpoints
-- **Create a streak**: `POST /streaks`
-- **Add description**: `PUT /streaks/{id}/description`
-- **Start streak**: `POST /streaks/{id}/start`
-- **Pause streak**: `POST /streaks/{id}/pause`
-- **Archive streak**: `POST /streaks/{id}/archive`
-- **Mark done (Today)**: `POST /streaks/{id}/check`
-- **Mark done (Specific Date)**: `POST /streaks/{id}/check?date={yyyy-mm-dd}`
-- **Mark undone (Today)**: `POST /streaks/{id}/uncheck`
-- **Mark undone (Specific Date)**: `POST /streaks/{id}/uncheck?date={yyyy-mm-dd}`
+- **Create a streak**: `POST /api/v1/streaks`
+- **Update a streak**: `PUT /api/v1/streaks/{id}`
+- **Get streak details**: `GET /api/v1/streaks/{id}`
+- **Start streak**: `POST /api/v1/streaks/{id}/start`
+- **Pause streak**: `POST /api/v1/streaks/{id}/pause`
+- **Archive streak**: `POST /api/v1/streaks/{id}/archive`
+- **Mark done (Today)**: `POST /api/v1/streaks/{id}/checkin`
+- **Mark undone (Today)**: `POST /api/v1/streaks/{id}/uncheck`
 
-### Metrics
-- **Short metrics**:
+### Metrics & History
+- **Get Metrics**: `GET /api/v1/streaks/{id}/metrics`
     - Current streak
     - Longest streak
+- **Get History**: `GET /api/v1/streaks/{id}/history?range={week|month|last5}`
+    - Returns list of check-in dates.
 
-### API Layer
-- **Webhooks**: Handling external events.
-- **Get Metrics APIs**: Retrieving streak statistics.
+### Documentation
+- **Swagger UI**: `/swagger-ui.html`
+- **OpenAPI JSON**: `/v3/api-docs`

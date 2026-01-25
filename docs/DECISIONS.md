@@ -33,3 +33,21 @@ We will use:
 - Allows for a modern, reactive frontend.
 - Robust backend with Spring ecosystem.
 - Scalable, serverless database with DynamoDB.
+
+## 0003 - Backend Implementation Strategy
+**Date:** 2026-01-25
+**Status:** Accepted
+
+### Context
+We needed to implement the core CRUD and logic for the Streaks Manager API.
+
+### Decision
+- **Spring Boot 3.4.1**: Updated from an invalid version to ensure stability.
+- **JPA/Hibernate**: For Object-Relational Mapping (replacing DynamoDB idea for now to stick to relational structure with H2/Postgres for easier development).
+- **StreakEntry Entity**: To track individual check-ins, allowing for history reconstruction and detailed views (Week/Month).
+- **SpringDoc OpenAPI**: To automatically generate API documentation and Swagger UI.
+
+### Consequences
+- Need to maintain relational schema.
+- API documentation is auto-generated and stays in sync with code.
+- `StreakService` handles business logic including streak counting and history retrieval.
