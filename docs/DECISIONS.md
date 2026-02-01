@@ -51,3 +51,36 @@ We needed to implement the core CRUD and logic for the Streaks Manager API.
 - Need to maintain relational schema.
 - API documentation is auto-generated and stays in sync with code.
 - `StreakService` handles business logic including streak counting and history retrieval.
+
+## 0004 - Authentication & Ownership
+**Date:** 2026-02-01
+**Status:** Accepted
+
+### Context
+We needed to secure the application and ensure users can only see and manage their own streaks.
+
+### Decision
+- **Mock OTP Auth**: Implemented a phone number based login with a mock OTP printed to console for MVP.
+- **Token-based Security**: Simple Bearer token mechanism.
+- **Data Ownership**: Added `userId` to `Streak` entity. All filtering happens at the service/repository level based on the authenticated user.
+
+### Consequences
+- Requires users to log in.
+- Prevents cross-user data leakage (403 Forbidden fixed by enforcing filters).
+- "Mock" nature means it's not ready for public release without a real SMS provider.
+
+## 0005 - UI Architecture
+**Date:** 2026-02-01
+**Status:** Accepted
+
+### Context
+We needed a navigation structure and a way to view streaks.
+
+### Decision
+- **Sidebar Navigation**: A collapsible sidebar for main navigation (Dashboard, Profile, Logout).
+- **Dashboard Layout**: Card-based layout for streaks.
+- **Streak Cards**: Individual cards showing current/best streaks, with "Edit" and "Archive" actions.
+
+### Consequences
+- Provides a scalable layout for adding more pages.
+- Clean separation of concerns in UI components.

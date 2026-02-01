@@ -8,16 +8,13 @@ A project to manage streaks.
 - Visualize progress.
 
 ## Todos
+### P0
+- [x] Create functional API layer using Spring Boot.
+- [x] Create Basic React UI (Dashboard, Sidebar).
+- [x] Implement Authentication (Mock OTP).
+- [x] Integrate PostgreSQL.
+
+### Backlog
 - [ ] Dockerize (for self-hosting)
 - [ ] Setup SSO (across sites)
-
-## Queries
-- What kind of design would I like to have?
-
-## Ideas
-- Smart notifications based on descriptions and timezone calculations.
-- App for notifications and widgets.
-- Tenant based application.
-
-### P0
-- Create functional API layer using Spring Boot.
+- [ ] Real Email/SMS Gateway for OTP

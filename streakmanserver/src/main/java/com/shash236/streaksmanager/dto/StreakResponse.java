@@ -18,4 +18,5 @@ public class StreakResponse {
     private LocalDate lastCheckIn;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private java.util.List<LocalDate> pastWeekHistory;
 }

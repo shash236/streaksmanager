@@ -1,13 +1,13 @@
 # Current Task
 
 ## Objective
-Set up project documentation structure.
+Update Project Documentation.
 
 ## Status
-- [x] Create `PROJECT.md`
-- [x] Create `docs/DECISIONS.md`
-- [x] Create `docs/ARCHITECTURE.md`
-- [x] Create `tasks/current-task.md`
+- [x] Update PROJECT.md with recent progress (Auth, UI, DB).
+- [x] Update docs/DECISIONS.md with Auth and UI decisions.
+- [x] Update docs/ARCHITECTURE.md with Security and Auth API details.
+- [x] Archive previous auth task.
 
 ## Notes
-Initial setup complete.
+- Documentation is now up to date with the codebase state as of Feb 01, 2026.

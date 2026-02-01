@@ -42,6 +42,13 @@ public class Streak {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "streak", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<StreakEntry> entries;
+
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 }

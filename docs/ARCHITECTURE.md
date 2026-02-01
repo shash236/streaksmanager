@@ -3,7 +3,11 @@
 ## Implementation Structure
 - **Frontend**: React
 - **Backend**: Spring
-- **Database**: H2 (Development), Postgres (Production)
+- **Database**: Postgres (Local & Production)
+
+## Security
+- **Authentication**: Bearer Token (Custom implementation for MVP).
+- **Access Control**: Role-based / Owner-based access (Users can only manage their own streaks).
 
 ## Core Functions
 - Create, Update, Manage Streaks
@@ -13,6 +17,13 @@
 
 ## REST APIs
 ### Endpoints
+
+#### Authentication
+- **Send OTP**: `POST /auth/otp/send`
+- **Verify OTP**: `POST /auth/otp/verify`
+- **Logout**: `POST /auth/logout`
+
+#### Streaks
 - **Create a streak**: `POST /api/v1/streaks`
 - **Update a streak**: `PUT /api/v1/streaks/{id}`
 - **Get streak details**: `GET /api/v1/streaks/{id}`

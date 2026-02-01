@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/streaks")
@@ -19,64 +21,90 @@ public class StreakController {
 
     @PostMapping
     @Operation(summary = "Create a new streak")
-    public ResponseEntity<StreakResponse> createStreak(@Valid @RequestBody CreateStreakRequest request) {
-        return ResponseEntity.ok(streakService.createStreak(request));
+    public ResponseEntity<StreakResponse> createStreak(
+            @Valid @RequestBody CreateStreakRequest request,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.createStreak(request, userId));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all streaks")
+    public ResponseEntity<java.util.List<StreakResponse>> getAllStreaks(@AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.getAllStreaks(userId));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing streak")
-    public ResponseEntity<StreakResponse> updateStreak(@PathVariable Long id,
-            @RequestBody UpdateStreakRequest request) {
-        return ResponseEntity.ok(streakService.updateStreak(id, request));
+    public ResponseEntity<StreakResponse> updateStreak(
+            @PathVariable Long id,
+            @RequestBody UpdateStreakRequest request,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.updateStreak(id, request, userId));
     }
 
     @PostMapping("/{id}/start")
     @Operation(summary = "Start a streak (activate)")
-    public ResponseEntity<StreakResponse> startStreak(@PathVariable Long id) {
-        return ResponseEntity.ok(streakService.startStreak(id));
+    public ResponseEntity<StreakResponse> startStreak(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.startStreak(id, userId));
     }
 
     @PostMapping("/{id}/pause")
     @Operation(summary = "Pause a streak")
-    public ResponseEntity<StreakResponse> pauseStreak(@PathVariable Long id) {
-        return ResponseEntity.ok(streakService.pauseStreak(id));
+    public ResponseEntity<StreakResponse> pauseStreak(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.pauseStreak(id, userId));
     }
 
     @PostMapping("/{id}/archive")
     @Operation(summary = "Archive a streak")
-    public ResponseEntity<StreakResponse> archiveStreak(@PathVariable Long id) {
-        return ResponseEntity.ok(streakService.archiveStreak(id));
+    public ResponseEntity<StreakResponse> archiveStreak(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.archiveStreak(id, userId));
     }
 
     @PostMapping("/{id}/checkin")
-    @Operation(summary = "Mark streak as done for today")
-    public ResponseEntity<StreakResponse> checkIn(@PathVariable Long id) {
-        return ResponseEntity.ok(streakService.checkIn(id));
+    @Operation(summary = "Mark streak as done for today or specific date")
+    public ResponseEntity<StreakResponse> checkIn(
+            @PathVariable Long id,
+            @RequestParam(required = false) LocalDate date,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.checkIn(id, date, userId));
     }
 
     @PostMapping("/{id}/uncheck")
-    @Operation(summary = "Mark streak as undone for today")
-    public ResponseEntity<StreakResponse> uncheck(@PathVariable Long id) {
-        return ResponseEntity.ok(streakService.uncheck(id));
+    @Operation(summary = "Mark streak as undone for today or specific date")
+    public ResponseEntity<StreakResponse> uncheck(
+            @PathVariable Long id,
+            @RequestParam(required = false) LocalDate date,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.uncheck(id, date, userId));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get streak details")
-    public ResponseEntity<StreakResponse> getStreak(@PathVariable Long id) {
-        return ResponseEntity.ok(streakService.getStreak(id));
+    public ResponseEntity<StreakResponse> getStreak(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.getStreak(id, userId));
     }
 
     @GetMapping("/{id}/metrics")
     @Operation(summary = "Get streak metrics")
-    public ResponseEntity<StreakMetricsResponse> getMetrics(@PathVariable Long id) {
-        return ResponseEntity.ok(streakService.getMetrics(id));
+    public ResponseEntity<StreakMetricsResponse> getMetrics(@PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.getMetrics(id, userId));
     }
 
     @GetMapping("/{id}/history")
     @Operation(summary = "Get streak history")
     public ResponseEntity<java.util.List<StreakEntryResponse>> getHistory(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "month") String range) {
-        return ResponseEntity.ok(streakService.getStreakHistory(id, range));
+            @RequestParam(required = false) String range,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @AuthenticationPrincipal Long userId) {
+
+        if (startDate != null && endDate != null) {
+            return ResponseEntity.ok(streakService.getStreakHistory(id, startDate, endDate, userId));
+        }
+
+        // Fallback to range string if explicit dates not provided
+        return ResponseEntity.ok(streakService.getStreakHistory(id, range != null ? range : "month", userId));
     }
 }

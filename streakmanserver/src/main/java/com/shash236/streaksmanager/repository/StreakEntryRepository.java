@@ -16,4 +16,6 @@ public interface StreakEntryRepository extends JpaRepository<StreakEntry, Long> 
     Optional<StreakEntry> findByStreakAndCheckInDate(Streak streak, LocalDate checkInDate);
 
     void deleteByStreakAndCheckInDate(Streak streak, LocalDate checkInDate);
+
+    List<StreakEntry> findAllByStreakOrderByCheckInDateAsc(Streak streak);
 }
