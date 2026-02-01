@@ -1,13 +1,14 @@
 # Current Task
 
 ## Objective
-Update Project Documentation.
+Setup Deployment Infrastructure.
 
 ## Status
-- [x] Update PROJECT.md with recent progress (Auth, UI, DB).
-- [x] Update docs/DECISIONS.md with Auth and UI decisions.
-- [x] Update docs/ARCHITECTURE.md with Security and Auth API details.
-- [x] Archive previous auth task.
+- [x] Document Deployment Architecture.
+- [x] Prepare Dockerfile for Backend.
+- [x] Configuring Github Actions.
+- [x] Configure External Database (Supabase) in Spring Boot.
 
 ## Notes
-- Documentation is now up to date with the codebase state as of Feb 01, 2026.
+- Stack: Vercel + EC2 + Supabase + GitHub Actions.
+

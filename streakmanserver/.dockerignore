@@ -1,0 +1,10 @@
+target
+.git
+.gitignore
+*.md
+mvnw.cmd
+.settings
+.classpath
+.project
+.vscode
+.idea

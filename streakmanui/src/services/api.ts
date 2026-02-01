@@ -1,6 +1,8 @@
 import type { CreateStreakRequest, StreakResponse, StreakMetricsResponse, StreakEntryResponse } from '../types/streak';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1/streaks'; // Ensure full URL if not proxied, or rely on Vite proxy. Assuming localhost:8080 for now based on login impl.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE_URL = `${API_URL}/api/v1/streaks`;
+
 
 function getHeaders() {
     const token = localStorage.getItem('token');

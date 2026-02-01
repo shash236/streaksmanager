@@ -24,7 +24,9 @@ export default function Login() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:8080/auth/otp/send', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+            const response = await fetch(`${apiUrl}/auth/otp/send`, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,7 +54,9 @@ export default function Login() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:8080/auth/otp/verify', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+            const response = await fetch(`${apiUrl}/auth/otp/verify`, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

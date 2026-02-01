@@ -3,7 +3,15 @@
 ## Implementation Structure
 - **Frontend**: React
 - **Backend**: Spring
-- **Database**: Postgres (Local & Production)
+- **Database**: Postgres (Local & Production - Supabase)
+
+## Deployment Architecture
+- **Frontend**: Vercel (Auto-deployed from GitHub)
+- **Backend**: AWS EC2 (Dockerized Spring Boot Application)
+
+- **Database**: Supabase (Managed PostgreSQL)
+- **CI/CD**: GitHub Actions (Build, Test, and Deploy)
+
 
 ## Security
 - **Authentication**: Bearer Token (Custom implementation for MVP).

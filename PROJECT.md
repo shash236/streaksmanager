@@ -13,6 +13,8 @@ A project to manage streaks.
 - [x] Create Basic React UI (Dashboard, Sidebar).
 - [x] Implement Authentication (Mock OTP).
 - [x] Integrate PostgreSQL.
+- [x] Setup Deployment Pipeline (Vercel, EC2, Supabase, GH Actions)
+
 
 ### Backlog
 - [ ] Dockerize (for self-hosting)
