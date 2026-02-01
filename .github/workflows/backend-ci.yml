@@ -9,6 +9,12 @@ on:
     branches: [ "main" ]
     paths:
       - 'streakmanserver/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
 
 jobs:
   build:
