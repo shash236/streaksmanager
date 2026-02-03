@@ -71,3 +71,42 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd streaksmanager
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker compose pull
+            docker compose up -d
+            docker image prune -f
+
+      - name: Verify Deployment Health
+        run: |
+          echo "Waiting for service to start up..."
+          sleep 15
+          
+          # Health check URL
+          HEALTH_URL="https://api.streakman-beta.shashwatik.me/actuator/health"
+          echo "Checking health status at $HEALTH_URL"
+          
+          for i in {1..12}; do
+            if curl -s $HEALTH_URL | grep -q '"status":"UP"'; then
+               echo "Health check passed! Service is UP and reachable."
+               exit 0
+            fi
+            echo "Attempt $i/12: Service not ready yet. Retrying in 5s..."
+            sleep 5
+          done
+          
+          echo "Health check failed after 60 seconds. Service might be down or unreachable."
+          exit 1
+
