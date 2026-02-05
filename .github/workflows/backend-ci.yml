@@ -89,7 +89,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
             --comment "Deploying backend via GitHub Actions" \
-            --parameters 'commands=["cd /home/ubuntu/streaksmanager", "echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin", "docker compose pull", "docker compose up -d", "docker image prune -f"]'
+            --parameters 'commands=["cd /home/ubuntu/streaksmanager", "echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin", "docker-compose pull", "docker-compose up -d", "docker image prune -f"]'
 
       - name: Verify Deployment Health
         run: |
