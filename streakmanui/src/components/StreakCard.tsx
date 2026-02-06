@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Streak } from '../types/streak';
 import CalendarModal from './CalendarModal';
+import { fromEpoch } from '../utils/dateUtils';
 
 interface StreakCardProps {
     streak: Streak;
@@ -17,7 +18,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
 
     React.useEffect(() => {
         if (streak.pastWeekHistory) {
-            setHistorySet(new Set(streak.pastWeekHistory));
+            setHistorySet(new Set(streak.pastWeekHistory.map(fromEpoch)));
         }
     }, [streak.pastWeekHistory]);
 
@@ -42,6 +43,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
             setHistorySet(newSet);
         }
     };
+
 
     // Generate last 7 days for the weekly view
     // Actually, design shows S M T W T F S (Static labels) or dynamic? 

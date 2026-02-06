@@ -1,17 +1,18 @@
 package com.shash236.streaksmanager.service;
 
 import com.shash236.streaksmanager.dto.*;
+import com.shash236.streaksmanager.mapper.StreakDTOMapper;
 import com.shash236.streaksmanager.model.Streak;
 import com.shash236.streaksmanager.model.StreakEntry;
 import com.shash236.streaksmanager.model.User;
-import com.shash236.streaksmanager.repository.StreakRepository;
 import com.shash236.streaksmanager.repository.StreakEntryRepository;
+import com.shash236.streaksmanager.repository.StreakRepository;
 import com.shash236.streaksmanager.repository.UserRepository;
+import com.shash236.streaksmanager.util.StreakCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,10 @@ public class StreakService {
     private final StreakRepository streakRepository;
     private final StreakEntryRepository streakEntryRepository;
     private final UserRepository userRepository;
+    private final StreakCalculator streakCalculator;
+    private final StreakDTOMapper streakDTOMapper;
+
+    private static final long MILLIS_PER_DAY = 24 * 60 * 60 * 1000L;
 
     @Transactional
     public StreakResponse createStreak(CreateStreakRequest request, Long userId) {
@@ -37,7 +42,7 @@ public class StreakService {
                 .user(user)
                 .build();
         streak = streakRepository.save(streak);
-        return mapToResponse(streak);
+        return streakDTOMapper.mapToResponse(streak);
     }
 
     @Transactional
@@ -50,7 +55,7 @@ public class StreakService {
             streak.setDescription(request.getDescription());
         }
         streak = streakRepository.save(streak);
-        return mapToResponse(streak);
+        return streakDTOMapper.mapToResponse(streak);
     }
 
     @Transactional
@@ -58,7 +63,7 @@ public class StreakService {
         Streak streak = getStreakOrThrow(id, userId);
         streak.setActive(true);
         streak = streakRepository.save(streak);
-        return mapToResponse(streak);
+        return streakDTOMapper.mapToResponse(streak);
     }
 
     @Transactional
@@ -66,7 +71,7 @@ public class StreakService {
         Streak streak = getStreakOrThrow(id, userId);
         streak.setActive(false);
         streak = streakRepository.save(streak);
-        return mapToResponse(streak);
+        return streakDTOMapper.mapToResponse(streak);
     }
 
     @Transactional
@@ -74,63 +79,6 @@ public class StreakService {
         Streak streak = getStreakOrThrow(id, userId);
         streakRepository.delete(streak);
         return StreakResponse.builder().id(id).title("Archived").build();
-    }
-
-    @Transactional
-    public StreakResponse checkIn(Long id, LocalDate date, Long userId) {
-        Streak streak = getStreakOrThrow(id, userId);
-        LocalDate checkInDate = (date != null) ? date : LocalDate.now();
-        LocalDate today = LocalDate.now();
-
-        if (streakEntryRepository.findByStreakAndCheckInDate(streak, checkInDate).isPresent()) {
-            return mapToResponse(streak);
-        }
-
-        // Only update current streak counters if checking in for today or yesterday
-        // AND the streak logic holds.
-        if (checkInDate.equals(today)) {
-            if (streak.getLastCheckIn() != null && streak.getLastCheckIn().equals(today.minusDays(1))) {
-                streak.setCurrentStreak(streak.getCurrentStreak() + 1);
-            } else if (streak.getLastCheckIn() == null || !streak.getLastCheckIn().equals(today)) {
-                // If not today (already checked) and not yesterday (broken), reset to 1
-                streak.setCurrentStreak(1);
-            }
-            streak.setLastCheckIn(today);
-            if (streak.getCurrentStreak() > streak.getLongestStreak()) {
-                streak.setLongestStreak(streak.getCurrentStreak());
-            }
-        } else {
-            // For past dates, we simply add the entry.
-        }
-
-        streak = streakRepository.save(streak);
-
-        // Create entry
-        StreakEntry entry = StreakEntry.builder()
-                .streak(streak)
-                .checkInDate(checkInDate)
-                .build();
-        streakEntryRepository.save(entry);
-
-        recalculateStreakStats(streak);
-        streak = streakRepository.save(streak); // Save again with updated stats
-
-        return mapToResponse(streak);
-    }
-
-    @Transactional
-    public StreakResponse uncheck(Long id, LocalDate date, Long userId) {
-        Streak streak = getStreakOrThrow(id, userId);
-        LocalDate uncheckDate = (date != null) ? date : LocalDate.now();
-
-        if (streakEntryRepository.findByStreakAndCheckInDate(streak, uncheckDate).isPresent()) {
-            streakEntryRepository.deleteByStreakAndCheckInDate(streak, uncheckDate);
-            // Recalculate everything
-            recalculateStreakStats(streak);
-        }
-
-        streak = streakRepository.save(streak);
-        return mapToResponse(streak);
     }
 
     public StreakMetricsResponse getMetrics(Long id, Long userId) {
@@ -146,40 +94,54 @@ public class StreakService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return streakRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
-                .map(this::mapToResponse)
+                .map(streakDTOMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     public StreakResponse getStreak(Long id, Long userId) {
-        return mapToResponse(getStreakOrThrow(id, userId));
+        return streakDTOMapper.mapToResponse(getStreakOrThrow(id, userId));
     }
 
-    public List<StreakEntryResponse> getStreakHistory(Long id, LocalDate startDate, LocalDate endDate, Long userId) {
+    public List<StreakEntryResponse> getStreakHistory(Long id, Long startDate, Long endDate, Long userId) {
         Streak streak = getStreakOrThrow(id, userId);
-        List<StreakEntry> entries = streakEntryRepository.findByStreakAndCheckInDateBetween(streak, startDate, endDate);
+        Long normStart = streakCalculator.normalizeDate(startDate);
+        Long normEnd = streakCalculator.normalizeDate(endDate);
+
+        List<StreakEntry> entries = streakEntryRepository.findByStreakAndCheckInDateBetween(streak, normStart, normEnd);
         return entries.stream()
                 .map(e -> StreakEntryResponse.builder().checkInDate(e.getCheckInDate()).build())
                 .collect(Collectors.toList());
     }
 
     public List<StreakEntryResponse> getStreakHistory(Long id, String range, Long userId) {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate;
+        long now = System.currentTimeMillis();
+        Long endDate = streakCalculator.normalizeDate(now);
+        Long startDate;
 
         switch (range) {
             case "week":
-                startDate = endDate.minusWeeks(1);
+                startDate = endDate - (7 * MILLIS_PER_DAY);
                 break;
             case "month":
-                startDate = endDate.minusMonths(1);
+                startDate = endDate - (30 * MILLIS_PER_DAY);
                 break;
             case "last5":
-                startDate = endDate.minusDays(4);
+                startDate = endDate - (4 * MILLIS_PER_DAY);
                 break;
             default:
-                startDate = endDate.minusMonths(1);
+                startDate = endDate - (30 * MILLIS_PER_DAY);
         }
         return getStreakHistory(id, startDate, endDate, userId);
+    }
+
+    @Transactional
+    public StreakResponse recalculateStreak(Long id, Long userId) {
+        Streak streak = getStreakOrThrow(id, userId);
+        // Fetch all entries including the new one and recalculate
+        List<StreakEntry> allEntries = streakEntryRepository.findAllByStreakOrderByCheckInDateAsc(streak);
+        streakCalculator.recalculateStatistics(streak, allEntries);
+        streak = streakRepository.save(streak);
+        return streakDTOMapper.mapToResponse(streak);
     }
 
     private Streak getStreakOrThrow(Long id, Long userId) {
@@ -187,65 +149,5 @@ public class StreakService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return streakRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Streak not found or access denied"));
-    }
-
-    private void recalculateStreakStats(Streak streak) {
-        List<StreakEntry> entries = streakEntryRepository.findAllByStreakOrderByCheckInDateAsc(streak);
-
-        int currentStreak = 0;
-        int longestStreak = 0;
-        int tempStreak = 0;
-        LocalDate lastDate = null;
-        LocalDate today = LocalDate.now();
-
-        for (StreakEntry entry : entries) {
-            LocalDate date = entry.getCheckInDate();
-
-            if (lastDate == null) {
-                tempStreak = 1;
-            } else {
-                if (date.equals(lastDate.plusDays(1))) {
-                    tempStreak++;
-                } else if (!date.equals(lastDate)) {
-                    tempStreak = 1;
-                }
-            }
-            lastDate = date;
-
-            if (tempStreak > longestStreak) {
-                longestStreak = tempStreak;
-            }
-        }
-
-        if (lastDate != null && (lastDate.equals(today) || lastDate.equals(today.minusDays(1)))) {
-            currentStreak = tempStreak;
-        } else {
-            currentStreak = 0;
-        }
-
-        streak.setCurrentStreak(currentStreak);
-        streak.setLongestStreak(longestStreak);
-        streak.setLastCheckIn(lastDate);
-    }
-
-    private StreakResponse mapToResponse(Streak streak) {
-        LocalDate today = LocalDate.now();
-        LocalDate weekStart = today.minusDays(6);
-
-        List<StreakEntry> entries = streakEntryRepository.findByStreakAndCheckInDateBetween(streak, weekStart, today);
-        List<LocalDate> historyDates = entries.stream().map(StreakEntry::getCheckInDate).collect(Collectors.toList());
-
-        return StreakResponse.builder()
-                .id(streak.getId())
-                .title(streak.getTitle())
-                .description(streak.getDescription())
-                .currentStreak(streak.getCurrentStreak())
-                .longestStreak(streak.getLongestStreak())
-                .active(streak.getActive())
-                .lastCheckIn(streak.getLastCheckIn())
-                .createdAt(streak.getCreatedAt())
-                .updatedAt(streak.getUpdatedAt())
-                .pastWeekHistory(historyDates)
-                .build();
     }
 }

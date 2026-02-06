@@ -5,10 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "streak_entries")
@@ -27,8 +23,14 @@ public class StreakEntry {
     private Streak streak;
 
     @Column(nullable = false)
-    private LocalDate checkInDate;
+    private Long checkInDate;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Long createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = System.currentTimeMillis();
+        }
+    }
 }

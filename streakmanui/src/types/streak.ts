@@ -5,10 +5,10 @@ export interface Streak {
     currentStreak: number;
     longestStreak: number;
     active: boolean;
-    lastCheckIn?: string;
-    createdAt: string;
-    updatedAt: string;
-    pastWeekHistory?: string[];
+    lastCheckIn?: number;
+    createdAt: number;
+    updatedAt: number;
+    pastWeekHistory?: number[];
 }
 
 export interface CreateStreakRequest {
@@ -24,22 +24,22 @@ export interface StreakResponse {
     currentStreak: number;
     longestStreak: number;
     active: boolean;
-    lastCheckIn?: string;
-    createdAt: string;
-    updatedAt: string;
-    pastWeekHistory?: string[]; // Added this as backend returns it in mapToResponse
+    lastCheckIn?: number;
+    createdAt: number;
+    updatedAt: number;
+    pastWeekHistory?: number[]; // Added this as backend returns it in mapToResponse
 }
 
 export interface StreakMetricsResponse {
     currentStreak: number;
     longestStreak: number;
     totalCheckins: number;
-    lastCheckIn: string;
+    lastCheckIn: number;
 }
 
 export interface StreakEntryResponse {
     id: number;
     streakId: number;
-    checkInDate: string;
-    createdAt: string;
+    checkInDate: number;
+    createdAt: number;
 }

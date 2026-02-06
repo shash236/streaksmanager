@@ -1,6 +1,7 @@
 package com.shash236.streaksmanager.controller;
 
 import com.shash236.streaksmanager.dto.*;
+import com.shash236.streaksmanager.service.StreakCheckInService;
 import com.shash236.streaksmanager.service.StreakService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/streaks")
@@ -18,6 +18,7 @@ import java.time.LocalDate;
 public class StreakController {
 
     private final StreakService streakService;
+    private final StreakCheckInService streakCheckInService;
 
     @PostMapping
     @Operation(summary = "Create a new streak")
@@ -64,18 +65,18 @@ public class StreakController {
     @Operation(summary = "Mark streak as done for today or specific date")
     public ResponseEntity<StreakResponse> checkIn(
             @PathVariable Long id,
-            @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) Long date,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(streakService.checkIn(id, date, userId));
+        return ResponseEntity.ok(streakCheckInService.checkIn(id, date, userId));
     }
 
     @PostMapping("/{id}/uncheck")
     @Operation(summary = "Mark streak as undone for today or specific date")
     public ResponseEntity<StreakResponse> uncheck(
             @PathVariable Long id,
-            @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) Long date,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(streakService.uncheck(id, date, userId));
+        return ResponseEntity.ok(streakCheckInService.uncheck(id, date, userId));
     }
 
     @GetMapping("/{id}")
@@ -96,8 +97,8 @@ public class StreakController {
     public ResponseEntity<java.util.List<StreakEntryResponse>> getHistory(
             @PathVariable Long id,
             @RequestParam(required = false) String range,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) Long startDate,
+            @RequestParam(required = false) Long endDate,
             @AuthenticationPrincipal Long userId) {
 
         if (startDate != null && endDate != null) {
@@ -106,5 +107,12 @@ public class StreakController {
 
         // Fallback to range string if explicit dates not provided
         return ResponseEntity.ok(streakService.getStreakHistory(id, range != null ? range : "month", userId));
+    }
+
+    @PostMapping("/{id}/recalculate")
+    @Operation(summary = "Force recalculate streak statistics")
+    public ResponseEntity<StreakResponse> recalculateStreak(@PathVariable Long id,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(streakService.recalculateStreak(id, userId));
     }
 }

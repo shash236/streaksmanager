@@ -5,11 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "streaks")
@@ -37,10 +32,9 @@ public class Streak {
     @Column(nullable = false)
     private Boolean active;
 
-    private LocalDate lastCheckIn;
+    private Long lastCheckIn;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Long createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -49,6 +43,20 @@ public class Streak {
     @OneToMany(mappedBy = "streak", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<StreakEntry> entries;
 
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private Long updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = System.currentTimeMillis();
+        }
+        if (updatedAt == null) {
+            updatedAt = System.currentTimeMillis();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = System.currentTimeMillis();
+    }
 }

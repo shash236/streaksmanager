@@ -59,11 +59,11 @@ export const streakService = {
         return handleResponse(response);
     },
 
-    checkIn: async (id: number, date?: string): Promise<StreakResponse> => {
+    checkIn: async (id: number, date?: number): Promise<StreakResponse> => {
         // Fix URL construction to use the API_BASE_URL properly if it's absolute
         const fetchUrl = new URL(`${API_BASE_URL}/${id}/checkin`);
         if (date) {
-            fetchUrl.searchParams.append('date', date);
+            fetchUrl.searchParams.append('date', date.toString());
         }
         const response = await fetch(fetchUrl.toString(), {
             method: 'POST',
@@ -72,10 +72,10 @@ export const streakService = {
         return handleResponse(response);
     },
 
-    uncheck: async (id: number, date?: string): Promise<StreakResponse> => {
+    uncheck: async (id: number, date?: number): Promise<StreakResponse> => {
         const fetchUrl = new URL(`${API_BASE_URL}/${id}/uncheck`);
         if (date) {
-            fetchUrl.searchParams.append('date', date);
+            fetchUrl.searchParams.append('date', date.toString());
         }
         const response = await fetch(fetchUrl.toString(), {
             method: 'POST',
@@ -115,11 +115,19 @@ export const streakService = {
         return handleResponse(response);
     },
 
-    getHistory: async (id: number, range?: string, startDate?: string, endDate?: string): Promise<StreakEntryResponse[]> => {
+    recalculate: async (id: number): Promise<StreakResponse> => {
+        const response = await fetch(`${API_BASE_URL}/${id}/recalculate`, {
+            method: 'POST',
+            headers: getHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    getHistory: async (id: number, range?: string, startDate?: number, endDate?: number): Promise<StreakEntryResponse[]> => {
         const url = new URL(`${API_BASE_URL}/${id}/history`);
         if (startDate && endDate) {
-            url.searchParams.append('startDate', startDate);
-            url.searchParams.append('endDate', endDate);
+            url.searchParams.append('startDate', startDate.toString());
+            url.searchParams.append('endDate', endDate.toString());
         } else if (range) {
             url.searchParams.append('range', range);
         }

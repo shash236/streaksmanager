@@ -3,10 +3,8 @@ package com.shash236.streaksmanager.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 @Data
 @Builder
 public class StreakEntryResponse {
-    private LocalDate checkInDate;
+    private Long checkInDate;
 }
