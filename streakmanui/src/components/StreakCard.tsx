@@ -5,15 +5,34 @@ import { fromEpoch } from '../utils/dateUtils';
 
 interface StreakCardProps {
     streak: Streak;
+    onCheckIn: (id: number, date?: string) => void;
+    onUncheck: (id: number, date?: string) => void;
     onEdit?: (streak: Streak) => void;
     onArchive?: (id: number) => void;
 }
 
-const StreakCard: React.FC<StreakCardProps> = ({ streak, onEdit, onArchive }) => {
+const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, onEdit, onArchive }) => {
 
     const [historySet, setHistorySet] = useState<Set<string>>(new Set());
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
+    const handleDayClick = (e: React.MouseEvent, dateStr: string) => {
+        e.stopPropagation();
+        const isChecked = historySet.has(dateStr);
+        if (isChecked) {
+            onUncheck(streak.id, dateStr);
+            // Optimistic update
+            const newSet = new Set(historySet);
+            newSet.delete(dateStr);
+            setHistorySet(newSet);
+        } else {
+            onCheckIn(streak.id, dateStr);
+            // Optimistic update
+            const newSet = new Set(historySet);
+            newSet.add(dateStr);
+            setHistorySet(newSet);
+        }
+    };
 
     React.useEffect(() => {
         if (streak.pastWeekHistory) {
@@ -171,6 +190,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onEdit, onArchive }) =>
                                         {day.dayLabel}
                                     </span>
                                     <div
+                                        onClick={(e) => handleDayClick(e, day.dateStr)}
                                         style={{
                                             width: '32px',
                                             height: '32px',
@@ -180,7 +200,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onEdit, onArchive }) =>
                                             justifyContent: 'center',
                                             backgroundColor: isChecked ? 'var(--color-accent)' : 'rgba(255,255,255,0.1)',
                                             color: isChecked ? 'white' : 'transparent',
-                                            cursor: 'default',
+                                            cursor: 'pointer',
                                             transition: 'all 0.2s ease',
                                             border: isToday && !isChecked ? '1px solid var(--color-text-muted)' : 'none',
                                             fontSize: '1rem'
