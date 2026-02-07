@@ -100,7 +100,7 @@ function Dashboard() {
             clearTimeout(recalculationTimeouts.current[id]);
         }
 
-        // Set new timeout for 3 seconds
+        // Debounce: wait 300ms to avoid duplicate calls on rapid clicks
         recalculationTimeouts.current[id] = setTimeout(async () => {
             try {
                 // Call recalculate API
@@ -112,7 +112,7 @@ function Dashboard() {
             } catch (err) {
                 console.error(`Failed to recalculate stats for streak ${id}:`, err);
             }
-        }, 1000); // 1 seconds delay
+        }, 300); // 300ms debounce
     };
 
     const handleCheckIn = async (id: number, date?: string) => {
