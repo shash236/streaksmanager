@@ -22,6 +22,8 @@ public class AuthService {
     private final Map<String, String> otpStore = new ConcurrentHashMap<>();
     private final Map<String, Long> tokenStore = new ConcurrentHashMap<>();
 
+    private final EmailService emailService;
+
     public void sendOtp(String identifier) {
         // Generate 6-digit OTP
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
@@ -30,7 +32,10 @@ public class AuthService {
         // Log it for local testing
         log.info("OTP for {}: {}", identifier, otp);
 
-        // In a real app, send via SMS or Email here
+        // Send via Email if identifier is an email
+        if (identifier.contains("@")) {
+            emailService.sendOtpEmail(identifier, otp);
+        }
     }
 
     public AuthResponse verifyOtp(String identifier, String otp) {
