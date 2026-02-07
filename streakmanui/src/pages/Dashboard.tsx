@@ -4,7 +4,7 @@ import type { StreakResponse, CreateStreakRequest } from '../types/streak';
 import StreakCard from '../components/StreakCard';
 import CreateStreakForm from '../components/CreateStreakForm';
 import NewStreakCard from '../components/NewStreakCard';
-import { toEpoch } from '../utils/dateUtils';
+
 
 function Dashboard() {
     const [streaks, setStreaks] = useState<StreakResponse[]>([]);
@@ -53,8 +53,6 @@ function Dashboard() {
 
         return () => {
             window.removeEventListener('resize', updateColumns);
-            // Cleanup timeouts on unmount
-            Object.values(recalculationTimeouts.current).forEach(clearTimeout);
         };
     }, [streaks, loading]); // Update when streaks change as grid content/layout might stabilize
 
@@ -90,50 +88,7 @@ function Dashboard() {
         }
     };
 
-    // Ref to store timeout IDs for debounce: streakId -> Timeout
-    const recalculationTimeouts = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
-    const scheduleRecalculation = (id: number) => {
-        // Clear existing timeout for this streak if any
-        if (recalculationTimeouts.current[id]) {
-            clearTimeout(recalculationTimeouts.current[id]);
-        }
-
-        // Set new timeout for 3 seconds
-        recalculationTimeouts.current[id] = setTimeout(async () => {
-            try {
-                // Call recalculate API
-                await streakService.recalculate(id);
-                // Then refresh the list to show updated stats
-                await fetchStreaks();
-                // Clean up
-                delete recalculationTimeouts.current[id];
-            } catch (err) {
-                console.error(`Failed to recalculate stats for streak ${id}:`, err);
-            }
-        }, 3000); // 3 seconds delay
-    };
-
-    const handleCheckIn = async (id: number, date?: string) => {
-        try {
-            await streakService.checkIn(id, date ? toEpoch(date) : undefined);
-            // Optimistic update is handled in StreakCard, but we need to ensure stats eventually update.
-            // Schedule delayed recalculation
-            scheduleRecalculation(id);
-        } catch (err) {
-            console.error('Failed to check in:', err);
-        }
-    };
-
-    const handleUncheck = async (id: number, date?: string) => {
-        try {
-            await streakService.uncheck(id, date ? toEpoch(date) : undefined);
-            // Schedule delayed recalculation
-            scheduleRecalculation(id);
-        } catch (err) {
-            console.error('Failed to uncheck:', err);
-        }
-    };
 
     /*
     const handleToggleActive = async (id: number, currentStatus: boolean) => {
@@ -257,9 +212,6 @@ function Dashboard() {
                         <StreakCard
                             key={streak.id}
                             streak={streak}
-                            onCheckIn={handleCheckIn}
-                            onUncheck={handleUncheck}
-                            onRefresh={fetchStreaks}
                             onEdit={(s) => setEditingStreak(s)}
                             onArchive={handleArchive}
                         />
@@ -271,9 +223,6 @@ function Dashboard() {
                         <StreakCard
                             key={streak.id}
                             streak={streak}
-                            onCheckIn={handleCheckIn}
-                            onUncheck={handleUncheck}
-                            onRefresh={fetchStreaks}
                             onEdit={(s) => setEditingStreak(s)}
                             onArchive={handleArchive}
                         />

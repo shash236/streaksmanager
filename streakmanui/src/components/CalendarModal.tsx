@@ -10,9 +10,10 @@ interface CalendarModalProps {
     currentStreak: number;
     longestStreak: number;
     onUpdate: () => void; // To refresh parent data if needed
+    readOnly?: boolean;
 }
 
-const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, streakId, streakTitle, currentStreak, longestStreak, onUpdate }) => {
+const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, streakId, streakTitle, currentStreak, longestStreak, onUpdate, readOnly }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [history, setHistory] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(false);
@@ -56,6 +57,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, streakId
     };
 
     const handleCheckToggle = async (day: number) => {
+        if (readOnly) return; // Read-only mode
+
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth(); // 0-indexed
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -220,11 +223,11 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, streakId
                                     justifyContent: 'center',
                                     position: 'relative',
                                     opacity: isFuture ? 0.3 : 1,
-                                    cursor: isFuture ? 'default' : 'pointer'
+                                    cursor: isFuture || readOnly ? 'default' : 'pointer'
                                 }}
                             >
                                 {day}
-                                {isChecked && (
+                                {isChecked && !readOnly && (
                                     <span style={{
                                         position: 'absolute',
                                         top: '2px',

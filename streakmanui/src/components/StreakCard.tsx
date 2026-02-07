@@ -5,16 +5,15 @@ import { fromEpoch } from '../utils/dateUtils';
 
 interface StreakCardProps {
     streak: Streak;
-    onCheckIn: (id: number, date?: string) => void;
-    onUncheck: (id: number, date?: string) => void;
-    onRefresh?: () => void;
     onEdit?: (streak: Streak) => void;
     onArchive?: (id: number) => void;
 }
 
-const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, onRefresh, onEdit, onArchive }) => {
+const StreakCard: React.FC<StreakCardProps> = ({ streak, onEdit, onArchive }) => {
+
     const [historySet, setHistorySet] = useState<Set<string>>(new Set());
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
 
     React.useEffect(() => {
         if (streak.pastWeekHistory) {
@@ -22,27 +21,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
         }
     }, [streak.pastWeekHistory]);
 
-    const handleCardClick = () => {
-        setIsCalendarOpen(true);
-    };
 
-    const handleDayClick = (e: React.MouseEvent, dateStr: string) => {
-        e.stopPropagation();
-        const isChecked = historySet.has(dateStr);
-        if (isChecked) {
-            onUncheck(streak.id, dateStr);
-            // Optimistic update
-            const newSet = new Set(historySet);
-            newSet.delete(dateStr);
-            setHistorySet(newSet);
-        } else {
-            onCheckIn(streak.id, dateStr);
-            // Optimistic update
-            const newSet = new Set(historySet);
-            newSet.add(dateStr);
-            setHistorySet(newSet);
-        }
-    };
 
 
     // Generate last 7 days for the weekly view
@@ -79,7 +58,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
                     position: 'relative',
                     overflow: 'hidden'
                 }}
-                onClick={handleCardClick}
+                onClick={() => setIsCalendarOpen(true)}
             >
                 {/* Flame Icon Background/Overlay */}
                 <div style={{
@@ -167,7 +146,6 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
                     </p>
                 </div>
 
-                {/* Weekly Progress Section */}
                 <div style={{
                     backgroundColor: 'rgba(0, 0, 0, 0.2)',
                     borderRadius: '12px',
@@ -193,7 +171,6 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
                                         {day.dayLabel}
                                     </span>
                                     <div
-                                        onClick={(e) => handleDayClick(e, day.dateStr)}
                                         style={{
                                             width: '32px',
                                             height: '32px',
@@ -203,7 +180,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
                                             justifyContent: 'center',
                                             backgroundColor: isChecked ? 'var(--color-accent)' : 'rgba(255,255,255,0.1)',
                                             color: isChecked ? 'white' : 'transparent',
-                                            cursor: 'pointer',
+                                            cursor: 'default',
                                             transition: 'all 0.2s ease',
                                             border: isToday && !isChecked ? '1px solid var(--color-text-muted)' : 'none',
                                             fontSize: '1rem'
@@ -225,7 +202,8 @@ const StreakCard: React.FC<StreakCardProps> = ({ streak, onCheckIn, onUncheck, o
                 streakTitle={streak.title}
                 currentStreak={streak.currentStreak}
                 longestStreak={streak.longestStreak}
-                onUpdate={onRefresh || (() => { })}
+                onUpdate={() => { }} // No updates allowed in read-only
+                readOnly={true}
             />
         </>
     );
